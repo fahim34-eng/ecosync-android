@@ -1,0 +1,65 @@
+import { View, Text, ToastAndroid } from 'react-native'
+import React, { useEffect, useState } from 'react'
+import CardComponent from '../../components/ui/CardComponent';
+import { ENDPOINT } from '../../../GlobalVariables';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ScrollView } from 'react-native-virtualized-view';
+import { SelectTopic } from '../../components/ui/SelectTopic';
+import tw from 'twrnc';
+
+export default function Issue() {
+  const [issues, setIssues] = useState([]);
+  const [selectedTopic, setSelectedTopic] = useState(null); 
+  const [filteredIssues, setFilteredIssues] = useState([]);
+  useEffect(() => {
+    async function getIssues() {
+      const token = await AsyncStorage.getItem("token");
+        if (!token) {
+          ToastAndroid.show("You are unauthorized", ToastAndroid.SHORT);
+          return;
+        }
+        const parsedToken = JSON.parse(token);
+        const response = await fetch(`${ENDPOINT}/citizen/issue/all`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + parsedToken.accessToken,
+            "ngrok-skip-browser-warning": "69420"
+          }
+        });
+        const data = await response.json();
+        if (data.detail === "Unauthorized") {
+          ToastAndroid.show("You are not authorized.", ToastAndroid.SHORT);
+        }
+        else {
+          setIssues(data)
+          setFilteredIssues(data)
+        }
+    }
+    getIssues()
+  }, [])
+
+  console.log(issues)
+
+  useEffect(() => {
+    if (selectedTopic) {
+      const filtered = issues.filter(issue => issue.type === selectedTopic)
+      setFilteredIssues(filtered)
+    } else {
+      setFilteredIssues(issues)
+    }
+  }
+
+  return (
+    <View>
+      <View style={tw`mx-2`}>
+        <SelectTopic topic={selectedTopic} setTopic={setSelectedTopic} />
+      </View>
+      <ScrollView>
+      {filteredIssues.map((issue) => (
+        <CardComponent key={issue.id} issue={issue} />
+      ))}
+    </ScrollView>
+    </View>
+  )
+}

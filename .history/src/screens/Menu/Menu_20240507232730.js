@@ -1,0 +1,23 @@
+import { View, Text } from 'react-native'
+import React, { useLayoutEffect, useState } from 'react'
+import MenuCategories from '../../components/MenuCategories';
+import SpeedDial from '../../components/SpeedDial';
+import { ScrollView } from 'react-native-virtualized-view';
+
+export default function Menu({ navigation }) {
+    useLayoutEffect(() => {
+        navigation.setOptions({
+          headerShown: false,
+        });
+      }, [navigation]);
+
+  return (
+    <ScrollView style={{ min-h-screen }}>
+        <MenuCategories navigation={navigation} />
+        <SpeedDial />
+    </ScrollView>
+      
+
+  )
+}
+
